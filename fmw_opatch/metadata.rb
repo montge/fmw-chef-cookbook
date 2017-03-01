@@ -4,7 +4,7 @@ maintainer_email 'fmw-chef-and-puppet_ww@oracle.com'
 license          'MIT'
 description      'Patch Oracle WebLogic 12c or any FMW 11g or 12c product'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.1.3'
+version          '0.1.4'
 
 recipe            "fmw_opatch",
                   "This is an empty recipe and does not do anything"
@@ -21,4 +21,3 @@ depends          'fmw_inst'
 %w{ windows solaris debian ubuntu redhat centos oracle sles }.each do |os|
   supports os
 end
-

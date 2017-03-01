@@ -24,12 +24,14 @@ if ['solaris2', 'linux'].include?(node['os'])
     action :create
   end
 
-  execute "extract #{node['fmw_bsu']['patch_id']}" do
-    command "unzip -o #{node['fmw_bsu']['source_file']} -d #{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir"
-    creates "#{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir/#{node['fmw_bsu']['patch_id']}.jar"
-    cwd node['fmw']['tmp_dir']
-    user node['fmw']['os_user']
-    group node['fmw']['os_group']
+  "#{node['fmw_bsu']['patch_id']}".split(",").zip("#{node['fmw_bsu']['source_file']}".split(",")).each do |pid,sf|
+    execute "extract #{pid}" do
+      command "unzip -o #{sf} -d #{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir"
+      creates "#{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir/#{pid}.jar"
+      cwd node['fmw']['tmp_dir']
+      user node['fmw']['os_user']
+      group node['fmw']['os_group']
+    end
   end
 
   bsu_utility = "#{node['fmw']['middleware_home_dir']}/utils/bsu/bsu.sh"
@@ -57,9 +59,11 @@ elsif node['os'].include?('windows')
 
   path = "#{node['fmw']['middleware_home_dir']}\\wlserver_10.3\\server\\adr"
 
-  execute "extract #{node['fmw_bsu']['patch_id']}" do
-    command "#{path}\\unzip.exe -o #{node['fmw_bsu']['source_file']} -d #{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir"
-    creates "#{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir/#{node['fmw_bsu']['patch_id']}.jar"
+  "#{node['fmw_bsu']['patch_id']}".split(',').zip("#{node['fmw_bsu']['source_file']}".split(',')).each do |pid,sf|
+    execute "extract #{pid}" do
+      command "#{path}\\unzip.exe -o #{sf} -d #{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir"
+      creates "#{node['fmw']['middleware_home_dir']}/utils/bsu/cache_dir/#{pid}.jar"
+    end
   end
 
 end
@@ -79,11 +83,13 @@ if VERSION.start_with? '11.'
     end
   end
 else
-  fmw_bsu_bsu node['fmw_bsu']['patch_id'] do
-    action :install
-    patch_id node['fmw_bsu']['patch_id']
-    middleware_home_dir node['fmw']['middleware_home_dir']
-    os_user node['fmw']['os_user'] if ['solaris2', 'linux'].include?(node['os'])
+  "#{node['fmw_bsu']['patch_id']}".split(',').each do |pid|
+    fmw_bsu_bsu pid do
+      action :install
+      patch_id pid
+      middleware_home_dir node['fmw']['middleware_home_dir']
+      os_user node['fmw']['os_user'] if ['solaris2', 'linux'].include?(node['os'])
+    end
   end
 end
 

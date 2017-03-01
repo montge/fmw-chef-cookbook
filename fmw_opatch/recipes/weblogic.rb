@@ -54,25 +54,29 @@ if VERSION.start_with? '11.'
     end
   end
 else
-  fmw_opatch_fmw_extract node['fmw_opatch']['weblogic_patch_id'] do
-    action              :extract
-    source_file         node['fmw_opatch']['weblogic_source_file']
-    os_user             node['fmw']['os_user']             if ['solaris2', 'linux'].include?(node['os'])
-    os_group            node['fmw']['os_group']            if ['solaris2', 'linux'].include?(node['os'])
-    tmp_dir             node['fmw']['tmp_dir']
-    middleware_home_dir node['fmw']['middleware_home_dir'] if node['os'].include?('windows')
-    version             node['fmw']['version']             if node['os'].include?('windows')
+  "#{node['fmw_opatch']['weblogic_patch_id']}".split(",").zip("#{node['fmw_opatch']['weblogic_source_file']}".split(",")).each do |pid,wsf|
+    fmw_opatch_fmw_extract pid do
+      action              :extract
+      source_file         wsf
+      os_user             node['fmw']['os_user']             if ['solaris2', 'linux'].include?(node['os'])
+      os_group            node['fmw']['os_group']            if ['solaris2', 'linux'].include?(node['os'])
+      tmp_dir             node['fmw']['tmp_dir']
+      middleware_home_dir node['fmw']['middleware_home_dir'] if node['os'].include?('windows')
+      version             node['fmw']['version']             if node['os'].include?('windows')
+    end
   end
 
-  fmw_opatch_opatch node['fmw_opatch']['weblogic_patch_id'] do
-    action              :apply
-    patch_id            node['fmw_opatch']['weblogic_patch_id']
-    oracle_home_dir     fmw_oracle_home
-    java_home_dir       node['fmw']['java_home_dir']
-    orainst_dir         node['fmw']['orainst_dir']         if ['solaris2', 'linux'].include?(node['os'])
-    os_user             node['fmw']['os_user']             if ['solaris2', 'linux'].include?(node['os'])
-    os_group            node['fmw']['os_group']            if ['solaris2', 'linux'].include?(node['os'])
-    tmp_dir             node['fmw']['tmp_dir']
+  "#{node['fmw_opatch']['weblogic_patch_id']}".split(",").each do |pid|
+    fmw_opatch_opatch pid do
+      action              :apply
+      patch_id            pid
+      oracle_home_dir     fmw_oracle_home
+      java_home_dir       node['fmw']['java_home_dir']
+      orainst_dir         node['fmw']['orainst_dir']         if ['solaris2', 'linux'].include?(node['os'])
+      os_user             node['fmw']['os_user']             if ['solaris2', 'linux'].include?(node['os'])
+      os_group            node['fmw']['os_group']            if ['solaris2', 'linux'].include?(node['os'])
+      tmp_dir             node['fmw']['tmp_dir']
+    end
   end
 end
 
